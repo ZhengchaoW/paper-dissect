@@ -5,11 +5,25 @@ Usage: render_html.py <graph.json> <out.html> [--src-dir DIR] [--no-images] [--m
   --src-dir   LaTeX source directory: figures referenced by \\includegraphics are embedded as data URIs
               (png/jpg/gif directly; pdf/eps via `pdftoppm` when available), tables (tabular) are converted to HTML.
   --artifact  emit the page without <!doctype>/<html>/<head>/<body> (for hosts that add their own skeleton).
-Stdlib only. KaTeX is loaded from cdnjs at view time; its CSS (fonts stripped) is inlined from katex.nofonts.css.
+Stdlib only. Vendored KaTeX JavaScript, CSS, and WOFF2 fonts are embedded in the output.
 """
 import sys, os, re, json, base64, subprocess, tempfile, html
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+KATEX_DIR = os.path.join(os.path.dirname(HERE), "assets", "katex")
+
+def katex_assets():
+    css_path = os.path.join(KATEX_DIR, "katex.min.css")
+    js_path = os.path.join(KATEX_DIR, "katex.min.js")
+    css = open(css_path, encoding="utf-8").read()
+    js = open(js_path, encoding="utf-8").read().replace("</script", "<\\/script")
+    def embed_font(match):
+        name = match.group(1)
+        data = open(os.path.join(KATEX_DIR, "fonts", name), "rb").read()
+        return 'url(data:font/woff2;base64,' + base64.b64encode(data).decode() + ') format("woff2")'
+    css = re.sub(r'url\(fonts/([^)]+\.woff2)\)\s*format\("woff2"\)', embed_font, css)
+    css = re.sub(r',url\(fonts/[^)]*\.(?:woff|ttf)\)\s*format\("(?:woff|truetype)"\)', '', css)
+    return css, js
 
 def find_asset(src_dir, path):
     cands = [path] + [path + ext for ext in (".png", ".jpg", ".jpeg", ".pdf", ".eps", ".gif")]
@@ -106,9 +120,9 @@ def main():
         tables += len(s["table_html"])
         s.pop("table_tex", None)
     template = open(os.path.join(HERE, "template.html")).read()
-    css = open(os.path.join(HERE, "katex.nofonts.css")).read()
+    css, katex_js = katex_assets()
     data = json.dumps(G, ensure_ascii=False).replace("</", "<\\/")
-    page = template.replace("/*KATEX_CSS*/", css).replace("/*GRAPH_JSON*/", data)
+    page = template.replace("/*KATEX_CSS*/", css).replace("/*KATEX_JS*/", katex_js).replace("/*GRAPH_JSON*/", data)
     if "--artifact" not in sys.argv:
         page = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">" + page.replace("<title>", "", 1).replace("</title>", "", 1) + "</body></html>"
         # move the title tag into head properly

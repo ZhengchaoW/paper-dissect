@@ -1,5 +1,4 @@
 <title>Paper Dissected</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
 <style>
 /*KATEX_CSS*/
 :root{
@@ -211,7 +210,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--rule);border
 </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>/*KATEX_JS*/</script>
 <script id="graph-data" type="application/json">/*GRAPH_JSON*/</script>
 <script>
 (() => {
@@ -265,21 +264,24 @@ function applyFold(mode) {
 // ---------- math ----------
 const MACROS = Object.assign({"\\normalfont": ""}, G.macros || {});
 function prepTex(t) { return t.replace(/\\label\{[^}]*\}/g, '').replace(/\\qedhere/g, '').replace(/\\normalfont\s*/g, '').replace(/\\text\{\\?\s*log\s*\}/g, '\\log ').replace(/\\rm\{([^}]*)\}/g, '\\mathrm{$1}').replace(/\\mathclap/g, '').replace(/\\smash/g, ''); }
+function mathPattern() { return /\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$((?:[^$\\]|\\.)+?)\$/g; }
 function renderMath(el) {
-  if (!window.katex) { el.innerHTML = esc(el.textContent).replace(/\$\$([\s\S]+?)\$\$|\$((?:[^$\\]|\\.)+?)\$/g, (m, a, b) => `<code style="font-family:var(--mono);font-size:.85em">${a !== undefined ? a : b}</code>`); return; }
   const text = el.textContent;
-  if (!text.includes('$')) return;
+  if (!text.includes('$') && !text.includes('\\(') && !text.includes('\\[')) return;
   const frag = document.createDocumentFragment();
-  const re = /\$\$([\s\S]+?)\$\$|\$((?:[^$\\]|\\.)+?)\$/g;
+  const re = mathPattern();
   let last = 0, m;
   while ((m = re.exec(text))) {
     if (m.index > last) frag.append(text.slice(last, m.index));
     const span = document.createElement('span');
-    let tex = prepTex(m[1] !== undefined ? m[1] : m[2]);
-    const display = m[1] !== undefined;
+    const raw = m[1] !== undefined ? m[1] : m[2] !== undefined ? m[2] : m[3] !== undefined ? m[3] : m[4];
+    let tex = prepTex(raw);
+    const display = m[1] !== undefined || m[2] !== undefined;
     if (display && (tex.includes('&') || tex.includes('\\\\')) && !/\\begin\{(aligned|cases|split|array)/.test(tex)) tex = '\\begin{aligned}' + tex + '\\end{aligned}';
-    try { katex.render(tex, span, {displayMode: display, throwOnError: false, macros: MACROS, strict: false}); }
-    catch (err) { span.textContent = m[0]; span.style.fontFamily = 'var(--mono)'; }
+    if (window.katex) {
+      try { katex.render(tex, span, {displayMode: display, throwOnError: false, macros: MACROS, strict: false}); }
+      catch (err) { span.textContent = m[0]; span.style.fontFamily = 'var(--mono)'; }
+    } else { span.textContent = tex; span.style.fontFamily = 'var(--mono)'; }
     frag.append(span); last = m.index + m[0].length;
   }
   if (last < text.length) frag.append(text.slice(last));
@@ -505,32 +507,32 @@ function revealSource(id) {
   const first = document.querySelector(`.sent[data-sid="${n.spans[0]}"]`);
   if (first) first.scrollIntoView({block: 'center', behavior: 'smooth'});
 }
-function crumb(id) { const chain = [...ancestors(id)].reverse().map(a => `<span data-go="${a}" style="cursor:pointer">${esc(labelOf(a))}</span>`); chain.push(`<b>${esc(labelOf(id))}</b>`); return `<div class="crumb">Paper › ${chain.join(' › ')}</div>`; }
+function crumb(id) { const chain = [...ancestors(id)].reverse().map(a => `<span class="mathtext" data-go="${a}" style="cursor:pointer">${esc(labelOf(a))}</span>`); chain.push(`<b class="mathtext">${esc(labelOf(id))}</b>`); return `<div class="crumb">Paper › ${chain.join(' › ')}</div>`; }
 function renderFocus() {
   const el = document.getElementById('focus');
   const id = state.selected;
   if (!id) { el.innerHTML = `<p class="hint">Click any row in the score, any sentence in the source, or any arc. The score lists ideas in the order the paper states them; arcs are the relations the linear text buried. Fold a section and its arcs merge into one (a quotient of the level below), so nothing disappears, it only coarsens.</p><p class="hint">Colours are roles. Dotted arcs are relations the dissector inferred rather than the authors stating; italic sentences in the source are connectives that became edge evidence instead of node content; struck-through grey sentences were discarded, each with a reason.</p><p class="hint"><b>Storyline</b> opens as the inquiry tree: the research question on the left, refined into design goals, requirements and evaluation questions, each answered by a claim or construct, the answers synthesizing into the contributions. The problems that motivated each question are shown as a "because" line on it (or as their own column with <b>problems as nodes</b>); <b>Narrative</b> switches to the order the paper tells it. Dotted arrows pass through hidden evidence. <b>open ▸</b> on a claim shows its warrants and one hop of setup behind each warrant; on a target, the claims that answer it; on a result, prerequisites → steps → theorem. The breadcrumb walks back up. <b>Score</b> is the same graph in the order the paper states it.</p>`; document.getElementById('focusinfo').textContent = ''; return; }
   const n = N.get(id);
-  if (!n) { const s = SEC.get(id); el.innerHTML = crumb(id) + `<h2>${esc(labelOf(id))}</h2><p class="hint">${descendantNodeCount(id)} nodes in this section.</p>`; return; }
+  if (!n) { const s = SEC.get(id); el.innerHTML = crumb(id) + `<h2 class="mathtext">${esc(labelOf(id))}</h2><p class="hint">${descendantNodeCount(id)} nodes in this section.</p>`; el.querySelectorAll('.mathtext').forEach(renderMath); return; }
   document.getElementById('focusinfo').textContent = n.id;
-  const spans = n.spans.map(sid => `<li data-sid="${sid}"><small>${sid}</small>${esc(cleanText(S.get(sid).text))}</li>`).join('');
-  const echoes = n.echoes.map(sid => `<li class="echo" data-sid="${sid}"><small>${sid} · ${secNum(sectionOfSid(sid)) || 'abs'}</small>${esc(cleanText(S.get(sid).text))}</li>`).join('');
+  const spans = n.spans.map(sid => `<li data-sid="${sid}"><small>${sid}</small><span class="mathtext">${esc(cleanText(S.get(sid).text))}</span></li>`).join('');
+  const echoes = n.echoes.map(sid => `<li class="echo" data-sid="${sid}"><small>${sid} · ${secNum(sectionOfSid(sid)) || 'abs'}</small><span class="mathtext">${esc(cleanText(S.get(sid).text))}</span></li>`).join('');
   function edgeRows(list, dir) {
     return list.filter(e => state.etypes.has(e.type)).map(e => {
       const other = dir === 'in' ? e.from : e.to; const on = N.get(other);
-      const ev = e.ev.map(sid => `<div class="ev"><small>${sid}</small>${esc(cleanText(S.get(sid).text))}</div>`).join('');
-      const note = e.note ? `<div class="ev">${esc(e.note)}</div>` : '';
-      return `<li style="--ec:${edgeColor(e.type)};--rc:${roleColor(on.role)}"><span class="et ${e.basis === 'inferred' ? 'inf' : ''}">${dir === 'in' ? ETYPE_LABEL[e.type] : (e.type === 'answered_by' ? 'answered by' : e.type)} ${dir === 'in' ? '←' : '→'}</span><span class="en" data-go="${other}"><span class="role" style="--rc:${roleColor(on.role)};font-size:9px;padding:0 4px">${ROLE_LABEL[on.role]}</span>${esc(on.label)}</span>${ev}${note}</li>`;
+      const ev = e.ev.map(sid => `<div class="ev"><small>${sid}</small><span class="mathtext">${esc(cleanText(S.get(sid).text))}</span></div>`).join('');
+      const note = e.note ? `<div class="ev mathtext">${esc(e.note)}</div>` : '';
+      return `<li style="--ec:${edgeColor(e.type)};--rc:${roleColor(on.role)}"><span class="et ${e.basis === 'inferred' ? 'inf' : ''}">${dir === 'in' ? ETYPE_LABEL[e.type] : (e.type === 'answered_by' ? 'answered by' : e.type)} ${dir === 'in' ? '←' : '→'}</span><span class="en" data-go="${other}"><span class="role" style="--rc:${roleColor(on.role)};font-size:9px;padding:0 4px">${ROLE_LABEL[on.role]}</span><span class="mathtext">${esc(on.label)}</span></span>${ev}${note}</li>`;
     }).join('');
   }
   const ins = edgeRows(inE.get(id) || [], 'in'), outs = edgeRows(outE.get(id) || [], 'out');
   const up = layers(id, 'up'), down = layers(id, 'down');
-  const lin = (lv, sign) => lv.length ? lv.map((ids, i) => `<div class="lvl"><span class="d">${sign}${i + 1}</span><div class="items">${ids.map(x => `<span class="it" data-go="${x}" style="--rc:${roleColor(N.get(x).role)}">${esc(N.get(x).label)}</span>`).join('')}</div></div>`).join('') : `<div class="empty">none within the current edge filter</div>`;
+  const lin = (lv, sign) => lv.length ? lv.map((ids, i) => `<div class="lvl"><span class="d">${sign}${i + 1}</span><div class="items">${ids.map(x => `<span class="it mathtext" data-go="${x}" style="--rc:${roleColor(N.get(x).role)}">${esc(N.get(x).label)}</span>`).join('')}</div></div>`).join('') : `<div class="empty">none within the current edge filter</div>`;
   const dirty = downstream(id);
-  const kids = (childrenOf.get(id) || []).filter(c => c.node).map(c => `<span class="it" data-go="${c.node.id}" style="--rc:${roleColor(c.node.role)}">${esc(c.node.label)}</span>`).join('');
+  const kids = (childrenOf.get(id) || []).filter(c => c.node).map(c => `<span class="it mathtext" data-go="${c.node.id}" style="--rc:${roleColor(c.node.role)}">${esc(c.node.label)}</span>`).join('');
   const where = `${secNum(sectionOfSid(n.spans[0])) || 'Abstract'} · ${n.spans[0]}${n.spans.length > 1 ? '–' + n.spans[n.spans.length - 1] : ''}${n.skeleton ? ' · skeleton only' : ''} · ${n.kind || n.role}${n.sub && n.sub !== n.role ? ' / ' + (SUB_LABEL[n.sub] || n.sub) : ''}${n.function ? ' · function: ' + n.function : ''}`;
-  const edgeFocus = selectedEdge ? `<div class="whatif" style="background:var(--sel)"><span>Selected relation: <b>${esc(labelOf(selectedEdge.from))}</b> <i>${ETYPE_LABEL[selectedEdge.type]}</i> <b>${esc(labelOf(selectedEdge.to))}</b>${selectedEdge.basis === 'inferred' ? ' (inferred by the dissector)' : ''}${selectedEdge.ev.length ? ' · evidence: ' + selectedEdge.ev.map(sid => esc(cleanText(S.get(sid).text))).join(' / ') : ''}${selectedEdge.note ? ' · ' + esc(selectedEdge.note) : ''}</span></div>` : '';
-  el.innerHTML = crumb(id) + `<h2><span class="role" style="--rc:${roleColor(n.role)}">${chipOf(n)}</span>${esc(n.label)}</h2><div class="where">${where}</div>` + edgeFocus +
+  const edgeFocus = selectedEdge ? `<div class="whatif" style="background:var(--sel)"><span class="mathtext">Selected relation: <b>${esc(labelOf(selectedEdge.from))}</b> <i>${ETYPE_LABEL[selectedEdge.type]}</i> <b>${esc(labelOf(selectedEdge.to))}</b>${selectedEdge.basis === 'inferred' ? ' (inferred by the dissector)' : ''}${selectedEdge.ev.length ? ' · evidence: ' + selectedEdge.ev.map(sid => esc(cleanText(S.get(sid).text))).join(' / ') : ''}${selectedEdge.note ? ' · ' + esc(selectedEdge.note) : ''}</span></div>` : '';
+  el.innerHTML = crumb(id) + `<h2><span class="role" style="--rc:${roleColor(n.role)}">${chipOf(n)}</span><span class="mathtext">${esc(n.label)}</span></h2><div class="where">${where}</div>` + edgeFocus +
     (n.text ? `<p class="stmt">${esc(n.text)}</p>` : '') +
     `<div class="whatif">${drillKind(id) ? `<button data-drill="${id}">Open ${drillKind(id) === 'proof' ? 'proof' : drillKind(id) === 'evidence' ? 'evidence' : 'contents'} graph ▸</button>` : ''}<button aria-pressed="${state.whatIf}" data-whatif>What if this changes?</button><span>${dirty.size ? `${dirty.size} downstream node${dirty.size > 1 ? 's' : ''} depend on it${state.whatIf ? ' — tinted in the score' : ''}` : 'nothing downstream depends on it'}</span></div>` +
     (kids ? `<h3>Contains</h3><div class="lineage"><div class="lvl"><div class="items">${kids}</div></div></div>` : '') +
@@ -540,8 +542,8 @@ function renderFocus() {
     `<h3>Outgoing relations</h3>${outs ? `<ul class="edgelist">${outs}</ul>` : '<div class="empty">none</div>'}` +
     `<h3>Spans (verbatim)</h3><ul class="spanlist" style="--rc:${roleColor(n.role)}">${spans}${echoes}</ul>` +
     (n.undissected ? `<div class="undiss-note">${n.undissected.length} sentences inside this proof are not yet dissected into steps.</div>` : '');
-  el.querySelectorAll('.spanlist li').forEach(li => { renderMath(li); li.addEventListener('click', () => { const s = document.querySelector(`.sent[data-sid="${li.dataset.sid}"]`); s?.scrollIntoView({block: 'center', behavior: 'smooth'}); }); });
-  el.querySelectorAll('.stmt').forEach(renderMath);
+  el.querySelectorAll('.spanlist li').forEach(li => li.addEventListener('click', () => { const s = document.querySelector(`.sent[data-sid="${li.dataset.sid}"]`); s?.scrollIntoView({block: 'center', behavior: 'smooth'}); }));
+  el.querySelectorAll('.mathtext, .stmt').forEach(renderMath);
   el.querySelectorAll('[data-go]').forEach(x => x.addEventListener('click', () => select(x.dataset.go)));
   el.querySelector('[data-drill]')?.addEventListener('click', () => { showTab('graph'); drill(id); });
   el.querySelector('[data-whatif]').addEventListener('click', () => { state.whatIf = !state.whatIf; renderRows(); renderFocus(); renderGraph(); });

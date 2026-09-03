@@ -227,7 +227,7 @@ def main():
     clean = make_cleaner(meta.get("macros"))
     elements = parse(src)
     sentences, envs, refs, sections = build(elements, clean)
-    json.dump({"sentences": sentences, "envs": envs, "refs": refs, "sections": sections, "title": meta.get("title", ""), "macros": {k: v["body"] for k, v in meta.get("macros", {}).items() if v.get("nargs", 0) == 0 and len(v["body"]) < 200}}, open(out, "w"), ensure_ascii=False, indent=0)
+    json.dump({"sentences": sentences, "envs": envs, "refs": refs, "sections": sections, "title": meta.get("title", ""), "macros": {k: v["body"] for k, v in meta.get("macros", {}).items() if len(v["body"]) < 200}}, open(out, "w"), ensure_ascii=False, indent=0)
     main_body = [s for s in sentences if not s["appendix"]]
     print(json.dumps({"units": len(sentences), "main_body": len(main_body), "appendix": len(sentences) - len(main_body), "envs": len(envs), "refs": len(refs)}))
     if "--listing" in sys.argv:

@@ -3,7 +3,7 @@
 inline every \\input / \\include recursively, strip comments, and keep only the document body.
 
 Usage: flatten_tex.py <src_dir> <out_flat.tex> [--main FILE]
-Also writes <out>.macros.json with simple \\newcommand definitions (for text expansion and KaTeX).
+Also writes <out>.meta.json with LaTeX macro definitions (for text expansion and KaTeX).
 """
 import sys, os, re, json
 
@@ -44,20 +44,63 @@ def flatten(path, root, seen):
         return f"\n%%MISSING {name}\n"
     return re.sub(r"\\(input|include)\{([^}]+)\}", rep, s)
 
+def read_group(text, start, opener="{", closer="}"):
+    """Return the contents and first index after one balanced group."""
+    if start >= len(text) or text[start] != opener:
+        return None, start
+    depth = 1; i = start + 1; body = ""
+    while i < len(text) and depth:
+        c = text[i]
+        if c == "\\" and i + 1 < len(text):
+            body += text[i:i + 2]; i += 2; continue
+        if c == opener: depth += 1
+        elif c == closer: depth -= 1
+        if depth: body += c
+        i += 1
+    return (body, i) if depth == 0 else (None, start)
+
 def extract_macros(text):
+    """Extract common command definitions in source order; later definitions win."""
+    found = []
+    command = r"(\\(?:[A-Za-z@]+|.))"
+
+    new_pat = re.compile(
+        r"\\(?:newcommand|renewcommand|providecommand)\*?\s*"
+        r"(?:\{\s*" + command + r"\s*\}|" + command + r")"
+    )
+    for m in new_pat.finditer(text):
+        name = m.group(1) or m.group(2)
+        i = m.end()
+        while i < len(text) and text[i].isspace(): i += 1
+        nargs = 0
+        if i < len(text) and text[i] == "[":
+            raw, i2 = read_group(text, i, "[", "]")
+            if raw is None or not raw.strip().isdigit(): continue
+            nargs = int(raw.strip()); i = i2
+            while i < len(text) and text[i].isspace(): i += 1
+            # Optional default for argument 1. KaTeX receives the body and arity;
+            # callers that use the optional form still render safely with throwOnError=false.
+            if i < len(text) and text[i] == "[":
+                _, i = read_group(text, i, "[", "]")
+                while i < len(text) and text[i].isspace(): i += 1
+        body, end = read_group(text, i)
+        if body is not None and len(body) < 400:
+            found.append((m.start(), name, body, nargs))
+
+    def_pat = re.compile(r"\\(?:def|gdef|edef|xdef)\s*" + command)
+    for m in def_pat.finditer(text):
+        name = m.group(1); i = m.end(); params = ""
+        while i < len(text) and text[i] != "{":
+            if text[i] == "\n" or len(params) >= 200: break
+            params += text[i]; i += 1
+        body, end = read_group(text, i)
+        if body is None or len(body) >= 400: continue
+        args = [int(x) for x in re.findall(r"#([1-9])", params)]
+        found.append((m.start(), name, body, max(args, default=0)))
+
     macros = {}
-    for m in re.finditer(r"\\(?:re)?newcommand\*?\{?\\([A-Za-z]+)\}?(?:\[(\d)\])?\{", text):
-        name, nargs = m.group(1), m.group(2)
-        # read balanced body
-        i = m.end(); depth = 1; body = ""
-        while i < len(text) and depth:
-            c = text[i]
-            if c == "\\": body += text[i:i + 2]; i += 2; continue
-            if c == "{": depth += 1
-            elif c == "}": depth -= 1
-            if depth: body += c
-            i += 1
-        if len(body) < 400: macros["\\" + name] = {"body": body, "nargs": int(nargs) if nargs else 0}
+    for _, name, body, nargs in sorted(found):
+        macros[name] = {"body": body, "nargs": nargs}
     return macros
 
 def main():

@@ -12,8 +12,8 @@ of ideas that the paper linearised into text. The construction is
 claim's evidence and a theorem's proof). Each level is a quotient of the level below, so the
 storyline can never say something the sentences do not support.
 
-Codex performs the semantic step by writing `dissection.py`; the preparation,
-validation, and rendering scripts use only Python's standard library.
+Codex performs the semantic step by writing `dissection.py`; the deterministic Python
+pipeline uses only the standard library and the renderer embeds its vendored KaTeX runtime.
 
 ## Read first
 
@@ -104,6 +104,10 @@ Then review your own graph against these questions before rendering:
   issue inside a proof is a step-level challenge, not a relabel of the theorem)
 - Are homes at the warrant and abstract/intro/conclusion restatements echoes?
 - Is every `inferred` edge really absent from the text?
+- Do representative inline and display equations render in both Source and Focus, including
+  `\\(...\\)` / `\\[...\\]` delimiters and paper-defined macros such as `\\def` and
+  argument-taking `\\newcommand`s?
+- Does the generated HTML contain no external runtime dependency?
 
 ## Render and deliver
 
@@ -112,8 +116,9 @@ role of its node, connectives in italics, discards greyed with their reason, fig
 tables inline), Storyline pane (inquiry tree; `open ▸` on a claim → its evidence graph, on a
 result → its proof graph; Narrative order as an alternative; the Score tab shows the same graph
 in source order, folded "by idea"), Focus pane (verbatim spans, incoming/outgoing relations
-with their evidence sentences, lineage, what-if). Use the default renderer to produce the
-portable local website.
+with their evidence sentences, lineage, what-if). Source and Focus render inline/display TeX
+and the paper's extracted macros. Use the default renderer to produce the portable offline
+website.
 
 Deliver: `index.html`, `graph.json`, `coverage.md`, `dissection.py`, and a three-line summary
 with the coverage numbers (units, dissected range, nodes, relations, inferred relations,

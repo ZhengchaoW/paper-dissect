@@ -10,7 +10,7 @@ supporting evidence together:
   left outside the completed coverage boundary;
 - the storyline runs from research questions to answers and contributions;
 - claims open into evidence graphs and theorems open into proof steps; and
-- the result is one portable `index.html` file with no web service or database.
+- the result is one portable offline `index.html` file with no web service or database.
 
 ## Install for Codex
 
@@ -37,7 +37,8 @@ Each run produces:
 - `dissection.py` — the paper-specific semantic mapping written by Codex.
 
 The deterministic preparation and rendering code uses Python's standard
-library. PDF-only input additionally requires `pdftotext`. LaTeX source gives
+library and embeds the vendored KaTeX runtime in each page. PDF-only input additionally
+requires `pdftotext`. LaTeX source gives
 the best result because theorem environments, equations, references, figures,
 and tables remain structurally available.
 

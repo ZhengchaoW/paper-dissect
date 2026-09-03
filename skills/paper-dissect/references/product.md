@@ -51,6 +51,10 @@ spans and echoes, "Rests on" / "Feeds into" lineage, incoming and outgoing relat
 their evidence sentence, "Open … graph ▸", and "What if this changes?" which tints every
 downstream dependent (over dependency edges only) in whichever view is open.
 
+Inline and display TeX render in both the Source and Focus panes. The renderer carries the
+paper's extracted `\\newcommand`, `\\renewcommand`, `\\providecommand`, and `\\def`-family
+macros into KaTeX, which is vendored with its fonts so the single HTML remains usable offline.
+
 ## Layout rules worth keeping
 
 - Top layer by *function*, proofs by *dependency*, score by *source order*. Never layer the
