@@ -14,7 +14,7 @@ supporting evidence together:
 
 ## Live example
 
-[Explore the interactive dissection](https://zhengchaow.github.io/paper-dissect/)
+[Explore the interactive dissection](https://zhengchao-wan.com/paper-dissect/)
 of *Elucidating Flow Matching ODE Dynamics via Data Geometry and Denoisers*.
 Start from its research questions, open a claim to inspect its evidence, or open
 a theorem to walk through its proof steps. The example also includes the paper's

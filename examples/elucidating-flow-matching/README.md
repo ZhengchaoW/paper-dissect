@@ -1,6 +1,6 @@
 # Elucidating Flow Matching ODE Dynamics via Data Geometry and Denoisers
 
-[Open the interactive reader](https://zhengchaow.github.io/paper-dissect/) ·
+[Open the interactive reader](https://zhengchao-wan.com/paper-dissect/) ·
 [PMLR paper](https://proceedings.mlr.press/v267/wan25e.html) ·
 [arXiv source](https://arxiv.org/abs/2412.18730)
 
