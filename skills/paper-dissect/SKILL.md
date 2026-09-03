@@ -42,6 +42,8 @@ python3 $S/render_html.py <workdir>/out/graph.json <workdir>/out/index.html --sr
 `prepare.py` prefers the arXiv LaTeX source: theorem environments, labels, `\ref`s, equations,
 figures and tables come out of it deterministically and become the skeleton. With a PDF only it
 falls back to `pdftotext` (no environments, no figures; say so in the deliverable).
+The mandatory formula preflight requires Node.js only to execute the vendored KaTeX file; it
+does not install packages or contact the network.
 
 Use any task-appropriate work directory, such as `./paper-dissect/<paper-id>/`.
 

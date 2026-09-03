@@ -51,7 +51,9 @@ The deterministic preparation and rendering code uses Python's standard
 library and embeds the vendored KaTeX runtime in each page. PDF-only input additionally
 requires `pdftotext`. LaTeX source gives
 the best result because theorem environments, equations, references, figures,
-and tables remain structurally available.
+and tables remain structurally available. The mandatory all-formula preflight
+requires Node.js to execute that vendored KaTeX runtime, without installing a
+package or contacting the network.
 
 ## Repository contents
 
