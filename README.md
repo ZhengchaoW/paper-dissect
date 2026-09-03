@@ -12,6 +12,17 @@ supporting evidence together:
 - claims open into evidence graphs and theorems open into proof steps; and
 - the result is one portable offline `index.html` file with no web service or database.
 
+## Live example
+
+[Explore the interactive dissection](https://zhengchaow.github.io/paper-dissect/)
+of *Elucidating Flow Matching ODE Dynamics via Data Geometry and Denoisers*.
+Start from its research questions, open a claim to inspect its evidence, or open
+a theorem to walk through its proof steps. The example also includes the paper's
+synthetic, CIFAR-10, and FFHQ experiments.
+
+The semantic map and coverage audit behind the page are in
+[`examples/elucidating-flow-matching/`](examples/elucidating-flow-matching/).
+
 ## Install for Codex
 
 Copy `skills/paper-dissect/` into your Codex skills directory, or point Codex
@@ -48,7 +59,8 @@ This repository intentionally contains only:
 
 - the installable Codex skill and its Python pipeline;
 - the taxonomy, DSL, and reader references required by the skill;
+- one worked paper dissection and its hosted self-contained reader; and
 - the MIT license.
 
-Generated paper websites and downloaded paper sources belong in the user's
-chosen work directory, not in this repository.
+Other generated paper websites and downloaded paper sources belong in the
+user's chosen work directory, not in this repository.

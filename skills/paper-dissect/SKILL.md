@@ -15,6 +15,11 @@ storyline can never say something the sentences do not support.
 Codex performs the semantic step by writing `dissection.py`; the deterministic Python
 pipeline uses only the standard library and the renderer embeds its vendored KaTeX runtime.
 
+See the [live worked example](https://zhengchaow.github.io/paper-dissect/) for the complete
+question → claim → evidence → proof interaction, and
+[`examples/elucidating-flow-matching/`](../../examples/elucidating-flow-matching/) for the
+semantic map and coverage audit that generate it.
+
 ## Read first
 
 - `references/taxonomy.md` — the labels (kinds, warrants, target/construct subtypes, story
