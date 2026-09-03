@@ -70,7 +70,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);ou
 .sent.k-undissected,.sent.k-unassigned{color:var(--faint);border-left-color:transparent}
 .sent.k-structure{display:none}
 .sent.math{overflow-x:auto;padding-top:3px;padding-bottom:3px}
-.sent .katex-display{margin:2px 0}
+.sent .katex-display{margin:2px 0;max-width:100%;overflow-x:auto;overflow-y:hidden}
+.math-fallback{font-family:var(--mono);font-size:.92em;color:var(--muted);background:#f5f2eb;border-radius:3px;padding:1px 3px}
 .src .cap{font-family:var(--ui);font-size:12px;color:var(--muted)}
 .src .cap::before{content:"Figure/Table · ";font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
 .srcfig{margin:4px 0 8px 12px;max-width:60ch}.srcfig img{max-width:100%;height:auto;border:1px solid var(--rule);background:#fff}
@@ -264,7 +265,7 @@ function applyFold(mode) {
 
 // ---------- math ----------
 const MACROS = Object.assign({"\\normalfont": ""}, G.macros || {});
-function prepTex(t) { return t.replace(/\\label\{[^}]*\}/g, '').replace(/\\qedhere/g, '').replace(/\\normalfont\s*/g, '').replace(/\\text\{\\?\s*log\s*\}/g, '\\log ').replace(/\\rm\{([^}]*)\}/g, '\\mathrm{$1}').replace(/\\mathclap/g, '').replace(/\\smash/g, ''); }
+function prepTex(t) { return t.replace(/\\label\{[^}]*\}/g, '').replace(/\\(?:vspace|hspace)\*?\{[^}]*\}/g, '').replace(/\\qedhere/g, '').replace(/\\normalfont\s*/g, '').replace(/\\text\{\\?\s*log\s*\}/g, '\\log ').replace(/\\rm\{([^}]*)\}/g, '\\mathrm{$1}').replace(/\\mathclap/g, '').replace(/\\smash/g, '').replace(/(^|[^\\])#(?![1-9])/g, '$1\\#'); }
 function mathPattern() { return /\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$((?:[^$\\]|\\.)+?)\$/g; }
 function renderMath(el) {
   const text = el.textContent;
@@ -280,8 +281,8 @@ function renderMath(el) {
     const display = m[1] !== undefined || m[2] !== undefined;
     if (display && (tex.includes('&') || tex.includes('\\\\')) && !/\\begin\{(aligned|cases|split|array)/.test(tex)) tex = '\\begin{aligned}' + tex + '\\end{aligned}';
     if (window.katex) {
-      try { katex.render(tex, span, {displayMode: display, throwOnError: false, macros: MACROS, strict: false}); }
-      catch (err) { span.textContent = m[0]; span.style.fontFamily = 'var(--mono)'; }
+      try { katex.render(tex, span, {displayMode: display, throwOnError: true, macros: MACROS, strict: false}); }
+      catch (err) { span.textContent = m[0]; span.className = 'math-fallback'; span.title = 'Math rendering failed: ' + err.message; console.error('Paper Dissect math error:', err.message, tex); }
     } else { span.textContent = tex; span.style.fontFamily = 'var(--mono)'; }
     frag.append(span); last = m.index + m[0].length;
   }
@@ -290,7 +291,16 @@ function renderMath(el) {
 }
 const TYPEWORD = /(\b(?:Theorem|Theorems|Thm\.|Thms\.|Lemma|Lemmas|Corollary|Corollaries|Proposition|Assumption|Assumptions|Equation|Equations|Eq\.|Eqs\.|Section|Sections|Sec\.|Secs\.|App\.|Appendix|Appendices|Table|Tab\.|Figure|Figures|Fig\.|Algorithm|Alg\.)\s+)\[ref:([^\]]+)\]/g;
 function shortRef(k) { const l = refLabel(k); return l.replace(/^(Theorem|Lemma|Corollary|Proposition|Assumption|Definition|Remark|Conjecture|Eq\.|Fig\.|Table|Alg\.|App\.|§)\s*/, ''); }
-function cleanText(t) { t = t.replace(/\\paragraph\{([^}]*)\}/g, '$1').replace(/\{([^{}]*?):\}/g, '$1:'); t = t.replace(TYPEWORD, (m, w, k) => w + shortRef(k)); return t.replace(/\[cite:([^\]]+)\]/g, (m, k) => '[' + k.split(',').map(x => x.replace(/\d{4}.*$/, s => ' ' + s.slice(0, 4))).join('; ') + ']').replace(/\[ref:([^\]]+)\]/g, (m, k) => refLabel(k)).replace(/^\{|\}$/g, ''); }
+function cleanText(t) {
+  const math = [];
+  t = t.replace(mathPattern(), m => { const i = math.length; math.push(m); return '\uE000M' + i + '\uE001'; });
+  t = t.replace(/\\paragraph\{([^}]*)\}/g, '$1').replace(/\{([^{}]*?):\}/g, '$1:');
+  t = t.replace(TYPEWORD, (m, w, k) => w + shortRef(k));
+  t = t.replace(/\[cite:([^\]]+)\]/g, (m, k) => '[' + k.split(',').map(x => x.replace(/\d{4}.*$/, s => ' ' + s.slice(0, 4))).join('; ') + ']')
+    .replace(/\[ref:([^\]]+)\]/g, (m, k) => refLabel(k)).replace(/^\{|\}$/g, '');
+  return t.replace(/\uE000M(\d+)\uE001/g, (m, i) => math[Number(i)]);
+}
+function sourceText(s) { return s.display_text !== undefined ? s.display_text : s.text; }
 const REF = G.refs || {};
 function refLabel(k) { return REF[k] || ('[' + k + ']'); }
 
@@ -322,14 +332,14 @@ function renderSource() {
   const parts = [];
   let curSec = null; let undissRun = null;
   for (const s of G.sentences) {
-    if (s.kind === 'heading') { parts.push(`<h${s.level === 0 ? 2 : 3} data-sec="sec_${s.id}"><span class="num">${secNum('sec_' + s.id)}</span>${esc(s.text)}</h${s.level === 0 ? 2 : 3}>`); continue; }
+    if (s.kind === 'heading') { parts.push(`<h${s.level === 0 ? 2 : 3} data-sec="sec_${s.id}"><span class="num">${secNum('sec_' + s.id)}</span>${esc(sourceText(s))}</h${s.level === 0 ? 2 : 3}>`); continue; }
     if (POS.get(s.id) === 0) parts.push(`<h2 data-sec="sec_abstract">Abstract</h2>`);
     const a = s.assign; const role = sentRole(s);
     const style = role ? `--rc:${roleColor(role)}` : (a.kind === 'edge' ? `--ec:${edgeColor(edgeById(a.id).type)}` : '');
     const cls = ['sent', 'k-' + a.kind, s.kind === 'math' ? 'math' : '', s.kind === 'caption' ? 'cap' : '', s.kind === 'envhead' ? 'envhead' : ''].join(' ');
     const reason = a.kind === 'discard' ? ` data-reason="${a.reason}"` : '';
-    if (s.kind === 'envhead') { parts.push(`<span class="${cls}" data-sid="${s.id}" style="${style}">${esc(s.text)}</span>`); continue; }
-    parts.push(`<span class="${cls}" data-sid="${s.id}" style="${style}"${reason} title="${s.id}">${esc(cleanText(s.text))}</span>`);
+    if (s.kind === 'envhead') { parts.push(`<span class="${cls}" data-sid="${s.id}" style="${style}">${esc(sourceText(s))}</span>`); continue; }
+    parts.push(`<span class="${cls}" data-sid="${s.id}" style="${style}"${reason} title="${s.id}">${esc(cleanText(sourceText(s)))}</span>`);
     if (s.kind === 'caption') {
       for (const g of (s.graphics_data || [])) parts.push(`<figure class="srcfig"><img src="${g}" alt="figure"></figure>`);
       for (const h of (s.table_html || [])) parts.push(`<div class="srctab">${h}</div>`);
@@ -516,12 +526,12 @@ function renderFocus() {
   const n = N.get(id);
   if (!n) { const s = SEC.get(id); el.innerHTML = crumb(id) + `<h2 class="mathtext">${esc(labelOf(id))}</h2><p class="hint">${descendantNodeCount(id)} nodes in this section.</p>`; el.querySelectorAll('.mathtext').forEach(renderMath); return; }
   document.getElementById('focusinfo').textContent = n.id;
-  const spans = n.spans.map(sid => `<li data-sid="${sid}"><small>${sid}</small><span class="mathtext">${esc(cleanText(S.get(sid).text))}</span></li>`).join('');
-  const echoes = n.echoes.map(sid => `<li class="echo" data-sid="${sid}"><small>${sid} · ${secNum(sectionOfSid(sid)) || 'abs'}</small><span class="mathtext">${esc(cleanText(S.get(sid).text))}</span></li>`).join('');
+  const spans = n.spans.map(sid => `<li data-sid="${sid}"><small>${sid}</small><span class="mathtext">${esc(cleanText(sourceText(S.get(sid))))}</span></li>`).join('');
+  const echoes = n.echoes.map(sid => `<li class="echo" data-sid="${sid}"><small>${sid} · ${secNum(sectionOfSid(sid)) || 'abs'}</small><span class="mathtext">${esc(cleanText(sourceText(S.get(sid))))}</span></li>`).join('');
   function edgeRows(list, dir) {
     return list.filter(e => state.etypes.has(e.type)).map(e => {
       const other = dir === 'in' ? e.from : e.to; const on = N.get(other);
-      const ev = e.ev.map(sid => `<div class="ev"><small>${sid}</small><span class="mathtext">${esc(cleanText(S.get(sid).text))}</span></div>`).join('');
+      const ev = e.ev.map(sid => `<div class="ev"><small>${sid}</small><span class="mathtext">${esc(cleanText(sourceText(S.get(sid))))}</span></div>`).join('');
       const note = e.note ? `<div class="ev mathtext">${esc(e.note)}</div>` : '';
       return `<li style="--ec:${edgeColor(e.type)};--rc:${roleColor(on.role)}"><span class="et ${e.basis === 'inferred' ? 'inf' : ''}">${dir === 'in' ? ETYPE_LABEL[e.type] : (e.type === 'answered_by' ? 'answered by' : e.type)} ${dir === 'in' ? '←' : '→'}</span><span class="en" data-go="${other}"><span class="role" style="--rc:${roleColor(on.role)};font-size:9px;padding:0 4px">${ROLE_LABEL[on.role]}</span><span class="mathtext">${esc(on.label)}</span></span>${ev}${note}</li>`;
     }).join('');
@@ -532,7 +542,7 @@ function renderFocus() {
   const dirty = downstream(id);
   const kids = (childrenOf.get(id) || []).filter(c => c.node).map(c => `<span class="it mathtext" data-go="${c.node.id}" style="--rc:${roleColor(c.node.role)}">${esc(c.node.label)}</span>`).join('');
   const where = `${secNum(sectionOfSid(n.spans[0])) || 'Abstract'} · ${n.spans[0]}${n.spans.length > 1 ? '–' + n.spans[n.spans.length - 1] : ''}${n.skeleton ? ' · skeleton only' : ''} · ${n.kind || n.role}${n.sub && n.sub !== n.role ? ' / ' + (SUB_LABEL[n.sub] || n.sub) : ''}${n.function ? ' · function: ' + n.function : ''}`;
-  const edgeFocus = selectedEdge ? `<div class="whatif" style="background:var(--sel)"><span class="mathtext">Selected relation: <b>${esc(labelOf(selectedEdge.from))}</b> <i>${ETYPE_LABEL[selectedEdge.type]}</i> <b>${esc(labelOf(selectedEdge.to))}</b>${selectedEdge.basis === 'inferred' ? ' (inferred by the dissector)' : ''}${selectedEdge.ev.length ? ' · evidence: ' + selectedEdge.ev.map(sid => esc(cleanText(S.get(sid).text))).join(' / ') : ''}${selectedEdge.note ? ' · ' + esc(selectedEdge.note) : ''}</span></div>` : '';
+  const edgeFocus = selectedEdge ? `<div class="whatif" style="background:var(--sel)"><span class="mathtext">Selected relation: <b>${esc(labelOf(selectedEdge.from))}</b> <i>${ETYPE_LABEL[selectedEdge.type]}</i> <b>${esc(labelOf(selectedEdge.to))}</b>${selectedEdge.basis === 'inferred' ? ' (inferred by the dissector)' : ''}${selectedEdge.ev.length ? ' · evidence: ' + selectedEdge.ev.map(sid => esc(cleanText(sourceText(S.get(sid))))).join(' / ') : ''}${selectedEdge.note ? ' · ' + esc(selectedEdge.note) : ''}</span></div>` : '';
   el.innerHTML = crumb(id) + `<h2><span class="role" style="--rc:${roleColor(n.role)}">${chipOf(n)}</span><span class="mathtext">${esc(n.label)}</span></h2><div class="where">${where}</div>` + edgeFocus +
     (n.text ? `<p class="stmt">${esc(n.text)}</p>` : '') +
     `<div class="whatif">${drillKind(id) ? `<button data-drill="${id}">Open ${drillKind(id) === 'proof' ? 'proof' : drillKind(id) === 'evidence' ? 'evidence' : 'contents'} graph ▸</button>` : ''}<button aria-pressed="${state.whatIf}" data-whatif>What if this changes?</button><span>${dirty.size ? `${dirty.size} downstream node${dirty.size > 1 ? 's' : ''} depend on it${state.whatIf ? ' — tinted in the score' : ''}` : 'nothing downstream depends on it'}</span></div>` +

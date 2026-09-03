@@ -35,6 +35,7 @@ S=<this skill dir>/scripts
 python3 $S/prepare.py <arxiv-id | latex-dir | paper.pdf> <workdir>   # fetch → flatten → segment; writes listing.txt
 # read <workdir>/listing.txt from the top, write <workdir>/dissection.py (the model's job, see below)
 python3 <workdir>/dissection.py <workdir>/skeleton.json <workdir>/out   # validates, writes graph.json + coverage.md
+node $S/check_math.js <workdir>/out/graph.json                       # mandatory: every formula must pass vendored KaTeX
 python3 $S/render_html.py <workdir>/out/graph.json <workdir>/out/index.html --src-dir <workdir>/src
 ```
 
@@ -109,9 +110,19 @@ Then review your own graph against these questions before rendering:
   issue inside a proof is a step-level challenge, not a relabel of the theorem)
 - Are homes at the warrant and abstract/intro/conclusion restatements echoes?
 - Is every `inferred` edge really absent from the text?
-- Do representative inline and display equations render in both Source and Focus, including
-  `\\(...\\)` / `\\[...\\]` delimiters and paper-defined macros such as `\\def` and
-  argument-taking `\\newcommand`s?
+- Does `check_math.js` report **zero failures across every delimited formula**? This is a
+  publication gate, not a sample check. Do not publish when it flags an unescaped literal
+  `#`, a damaged environment such as `cases`, an unsupported command, or any KaTeX parse error.
+- In a browser smoke test, are there zero `.math-fallback` elements in both Source and Focus?
+  Inspect at least one inline formula, one display formula, one paper-defined macro, and one
+  structured environment (`cases`, `aligned`, or equivalent).
+- Is author frontmatter human-readable rather than raw LaTeX? Commands such as
+  `\\begingroup`, `\\endgroup`, `\\renewcommand\\thefootnote{}`, `\\footnotetext`, and
+  `\\footnote` must be unwrapped while retaining semantic note text. A footnote embedded in
+  display math must be moved outside the math span before KaTeX sees it.
+- Do source units preserve math syntax before prose cleanup—including `\\#`, `\\\\` row
+  separators, and `\\begin{cases}…\\end{cases}`—and do `\\(...\\)` / `\\[...\\]`
+  delimiters plus paper-defined `\\def` and argument-taking `\\newcommand`s render correctly?
 - Does the generated HTML contain no external runtime dependency?
 
 ## Render and deliver

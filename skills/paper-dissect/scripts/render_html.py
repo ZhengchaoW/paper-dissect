@@ -11,6 +11,8 @@ import sys, os, re, json, base64, subprocess, tempfile, html
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 KATEX_DIR = os.path.join(os.path.dirname(HERE), "assets", "katex")
+sys.path.insert(0, HERE)
+from parse_tex import make_cleaner
 
 def katex_assets():
     css_path = os.path.join(KATEX_DIR, "katex.min.css")
@@ -105,7 +107,17 @@ def main():
     G = json.load(open(gpath))
     embedded = 0; tables = 0; skipped = 0
     max_kb = int(sys.argv[sys.argv.index("--max-image-kb") + 1]) if "--max-image-kb" in sys.argv else 900
+    # Keep graph.json as the provenance record, but normalize legacy/raw LaTeX wrappers
+    # for display. New parses should already be clean; this is a last-resort reader guard.
+    display_clean = make_cleaner({})
     for s in G["sentences"]:
+        source_text = s.get("text", "")
+        display_text = display_clean(source_text)
+        if display_text != source_text and re.search(
+            r"\\(?:begingroup|endgroup|footnote|footnotetext|newcommand|renewcommand|providecommand)\b",
+            source_text,
+        ):
+            s["display_text"] = display_text
         if s.get("kind") != "caption": continue
         if src_dir and "--no-images" not in sys.argv:
             uris = []

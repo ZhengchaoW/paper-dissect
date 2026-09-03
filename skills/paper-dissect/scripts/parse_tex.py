@@ -16,6 +16,9 @@ import re, json, sys, os
 THM_ENVS = ["theorem", "lemma", "corollary", "proposition", "assumption", "remark", "definition", "conjecture", "claim", "example", "proof"]
 FLOAT_ENVS = ["figure", "figure*", "wrapfigure", "table", "table*", "wraptable", "algorithm", "algorithm*", "sidewaysfigure", "sidewaystable"]
 ABBR = ["e.g.", "i.e.", "et al.", "vs.", "Thm.", "Thms.", "Eq.", "Eqs.", "Fig.", "Figs.", "Sec.", "Secs.", "App.", "resp.", "cf.", "Prop.", "Def.", "Lem.", "Cor.", "approx.", "w.r.t.", "a.k.a.", "No.", "Alg.", "Tab.", "Ch.", "Dr.", "Mr.", "Ms.", "St.", "viz.", "etc."]
+MATH_RE = re.compile(r"\$\$[\s\S]+?\$\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)|\$(?:[^$\\]|\\.)+?\$")
+NOTE_RE = re.compile(r"\\(?P<kind>footnote|footnotetext)(?:\[(?P<mark>[^\]]*)\])?\{")
+NOTE_TOKEN_RE = re.compile("\\x02F(\\d+)\\x03")
 
 def read_braced(s, start):
     depth = 1; j = start
@@ -114,10 +117,46 @@ def make_cleaner(macros):
         if m.get("nargs", 0) == 0 and "$" not in m["body"] and "\\begin" not in m["body"]:
             body = re.sub(r"\\(?:texttt|textbf|textit|textsc|emph|mbox|text)\{([^{}]*)\}", r"\1", m["body"]).strip()
             if body and len(body) < 60 and "\\" not in body: text_macros[name] = body
-    def clean(t):
+    def extract_notes(t):
+        """Replace balanced footnote commands with tokens while preserving their contents."""
+        notes = []; out = []; pos = 0
+        while True:
+            m = NOTE_RE.search(t, pos)
+            if not m:
+                out.append(t[pos:]); break
+            body, end = read_braced(t, m.end())
+            if body is None:
+                out.append(t[pos:m.end()]); pos = m.end(); continue
+            out.append(t[pos:m.start()])
+            out.append(f"\x02F{len(notes)}\x03")
+            notes.append((m.group("kind"), m.group("mark") or "", body))
+            pos = end
+        return "".join(out), notes
+
+    def normalize_math(fragment):
+        """Keep math verbatim, repairing only a genuinely unescaped literal hash."""
+        if fragment.startswith("$$"):
+            opener = closer = "$$"; body = fragment[2:-2]
+        elif fragment.startswith("\\["):
+            opener, closer, body = "\\[", "\\]", fragment[2:-2]
+        elif fragment.startswith("\\("):
+            opener, closer, body = "\\(", "\\)", fragment[2:-2]
+        else:
+            opener = closer = "$"; body = fragment[1:-1]
+        body = re.sub(r"(?<!\\)#(?![1-9])", r"\\#", body)
+        return opener + body + closer
+
+    def clean_prose(t):
         for name, body in sorted(text_macros.items(), key=lambda kv: -len(kv[0])):
             t = re.sub(re.escape(name) + r"(\{\})?(?![A-Za-z])", body, t)
         t = t.replace("~", " ").replace("\\\\", " ")
+        t = re.sub(r"\\(?:begingroup|endgroup)\b", " ", t)
+        t = re.sub(
+            r"\\(?:newcommand|renewcommand|providecommand)\*?\s*"
+            r"(?:\{\s*\\(?:[A-Za-z@]+|.)\s*\}|\\(?:[A-Za-z@]+|.))"
+            r"(?:\s*\[[^\]]*\]){0,2}\s*\{(?:[^{}]|\{[^{}]*\})*\}",
+            " ", t,
+        )
         t = re.sub(r"\\(?:noindent|centering|smallskip|medskip|bigskip|newline|quad|qquad|hfill|maketitle|clearpage|newpage|linebreak|par|indent|relax|ignorespaces|allowbreak)\b", " ", t)
         t = re.sub(r"\\(?:vspace|hspace|setlength|label|lhead|rhead|chead|thispagestyle|pagestyle|bibliographystyle|bibliography|pdfbookmark|fontsize|selectfont|addcontentsline|numberwithin)\*?\{[^}]*\}(\{[^}]*\})?", "", t)
         t = re.sub(r"\\(?:cite[pt]?|citealp|citeauthor|citeyear|citealt)\*?(?:\[[^\]]*\])?(?:\[[^\]]*\])?\{([^}]+)\}", lambda m: "[cite:" + m.group(1).replace(" ", "") + "]", t)
@@ -132,8 +171,37 @@ def make_cleaner(macros):
         t = re.sub(r"\{\\(?:bf|it|em|tt|sc|sl)\s+([^}]*)\}", r"\1", t)
         t = re.sub(r"\\(?:begin|end)\{[a-zA-Z*]+\}(?:\[[^\]]*\])?", " ", t)
         t = re.sub(r"\\item\s*(?:\[[^\]]*\])?", " • ", t)
-        t = re.sub(r"\{([^{}$\\]*?):\}", r"\1:", t)   # {Goal:} → Goal:
+        # Only unwrap short braced labels such as {Goal:}; never swallow a
+        # paragraph-wide author grouping merely because its math is protected.
+        t = re.sub(r"\{([A-Za-z][^{}$\\.!?;\n]{0,60}):\}", r"\1:", t)
         t = re.sub(r"[ \t]+", " ", t); t = re.sub(r"\n\s*\n+", "\n\n", t)
+        return t.strip()
+
+    def clean(t):
+        # Footnotes may occur inside display math. Pull their semantic content out before
+        # protecting math so KaTeX never receives prose or nested `$...$` delimiters.
+        t, notes = extract_notes(t)
+        maths = []
+        def keep_math(m):
+            fragment = m.group(0)
+            foot_tokens = NOTE_TOKEN_RE.findall(fragment)
+            fragment = NOTE_TOKEN_RE.sub("", fragment)
+            token = f"\x02M{len(maths)}\x03"
+            maths.append(normalize_math(fragment))
+            return token + "".join(f" \x02F{i}\x03" for i in foot_tokens)
+        t = MATH_RE.sub(keep_math, t)
+        t = clean_prose(t)
+        for i, (kind, mark, body) in enumerate(notes):
+            body = re.sub(r"\s+", " ", clean(body)).strip()
+            if kind == "footnotetext":
+                replacement = ((f"[{mark}] " if mark else "") + body).strip()
+            else:
+                prefix = f"footnote {mark}" if mark else "footnote"
+                replacement = f" ({prefix}: {body})"
+            t = t.replace(f"\x02F{i}\x03", replacement)
+        for i, fragment in enumerate(maths):
+            t = t.replace(f"\x02M{i}\x03", fragment)
+        t = re.sub(r"[ \t]+", " ", t)
         return t.strip()
     return clean
 
