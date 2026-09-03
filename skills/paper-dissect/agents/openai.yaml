@@ -1,0 +1,4 @@
+interface:
+  display_name: "Paper Dissect"
+  short_description: "Turn one paper into an interactive evidence map"
+  default_prompt: "Use $paper-dissect to turn this paper into a self-contained interactive website with source coverage, storyline, evidence, and proof views."
