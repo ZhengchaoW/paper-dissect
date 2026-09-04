@@ -8,7 +8,7 @@ description: Turn one research paper (arXiv id, LaTeX source, or PDF) into a sel
 Turn one paper into one self-contained interactive HTML reader by reconstructing the graph
 of ideas that the paper linearised into text. The construction is
 **bottom-up** (every sentence is partitioned, nothing is silently omitted); the reading is
-**top-down** (research question → refinements → answers → contributions, then drill into a
+**top-down** (research questions → refinements → the claims that answer them → syntheses, then drill into a
 claim's evidence and a theorem's proof). Each level is a quotient of the level below, so the
 storyline can never say something the sentences do not support.
 
@@ -76,8 +76,8 @@ statement, never a kind; it *motivates* a target and is displayed as that target
 Relations are typed by what the source is: `requires` (assumption →), `uses` (construct →;
 lemma → proof step), `entails` (statement → statement), `supports` (evidence → claim),
 `proves` (proof/step → theorem), `qualifies` / `challenges` (limitation, counter-evidence →),
-`contrasts`, `instantiates`, and the narrative trio `motivates`, `refines` (target → target),
-`answered_by` (target → claim or construct). Mark `basis="inferred"` whenever the authors did
+`contrasts`, `instantiates`, and the narrative relations `motivates`, `refines` (target → target),
+`answered_by` (target → claim or construct) and `develops` (claim → claim). Mark `basis="inferred"` whenever the authors did
 not state the relation; attach the connective sentence as `ev`.
 
 Build the **question chain explicitly**: the research question (usually the paper's
@@ -94,6 +94,11 @@ proofs of the main theorems; register the remaining appendix environments with
 
 Mark the two or three constructs that *are* the approach with `story=True` so they appear on
 the storyline; mark interpretations and comparisons with those functions so they fold as asides.
+Keep the storyline to one claim per idea: when a section states one headline claim and several
+finer claims that support it (one per stage, per regime, per case), give the finer claims
+`story=False` and `supports` edges into the headline claim — they become the Sub-claims tier of
+its evidence graph. Use `develops` (claim → claim) when a claim is built on or synthesised from
+earlier claims; never `supports` for that, which is reserved for warrant → claim.
 
 ## Validate and review
 
@@ -102,8 +107,11 @@ bad labels, dependency cycles, steps outside proofs, targets with impossible fun
 on targets with no answer and claims with no support. Fix errors; justify or fix warnings.
 
 Then review your own graph against these questions before rendering:
-- Does the inquiry tree read as the paper's argument? (research question → refinements →
-  answers → contributions; nothing else in the top layer)
+- Does the inquiry tree read as the paper's argument? (root questions → refinements → the
+  claims that answer them → what those claims develop into; nothing else in the top layer)
+- Is every storyline claim an idea, not a restatement? The introduction's roadmap and the "our
+  contributions" paragraph are echoes of body claims, not nodes; a claim whose home is the
+  abstract needs a body home or becomes an echo.
 - Is anything labelled `problem` actually the negation of a criterion? If so, attach it to that
   criterion via `motivates`, don't make a second story node for it.
 - Does each `interpreted` statement have a warrant (`supports`/`entails` incoming) or a visible
@@ -131,8 +139,8 @@ Then review your own graph against these questions before rendering:
 
 `render_html.py` produces one self-contained page: source pane (every unit, coloured by the
 role of its node, connectives in italics, discards greyed with their reason, figures and
-tables inline), Storyline pane (inquiry tree; `open ▸` on a claim → its evidence graph, on a
-result → its proof graph; Narrative order as an alternative; the Score tab shows the same graph
+tables inline), Storyline pane (inquiry tree; `open ▸` on a claim → its evidence graph with its folded
+sub-claims, on a result → its proof graph; Narrative order as an alternative; the Score tab shows the same graph
 in source order, folded "by idea"), Focus pane (verbatim spans, incoming/outgoing relations
 with their evidence sentences, lineage, what-if). Source and Focus render inline/display TeX
 and the paper's extracted macros. Use the default renderer to produce the portable offline
@@ -147,7 +155,8 @@ unreviewed.
 
 - Don't select the "important" sentences first and skip the rest: partition, then label.
 - Don't use one edge type for everything; `enables` is not in the vocabulary on purpose.
-- Don't layer the storyline by dependency depth; the top layer is laid out by function.
+- Don't layer the storyline by dependency depth, and don't put a node in a column because of a
+  label: columns are defined by relations (`refines`, `answered_by`, `develops`).
 - Don't paraphrase a theorem into its claim; the theorem stays a `proved` statement, the claim
   it answers is a separate `interpreted` statement `supports`-ed by it.
 - Don't invent motivation edges from a problem to every target; one problem usually

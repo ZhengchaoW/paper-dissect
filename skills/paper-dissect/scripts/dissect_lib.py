@@ -23,7 +23,7 @@ WARRANTS = ("cited", "assumed", "proved", "derived", "observed", "interpreted", 
 TARGET_SUBTYPES = ("research_question", "desideratum", "design_goal", "evaluation_question", "open_question")
 CONSTRUCT_SUBTYPES = ("definition", "construction", "representation", "method", "algorithm", "model", "dataset", "metric", "baseline")
 FUNCTIONS = ("context", "problem", "motivation", "goal", "approach", "setup", "guarantee", "evaluation", "evidence", "theory_answer", "empirical_answer", "contribution", "interpretation", "comparison", "boundary", "future")
-EDGE_TYPES = ("refines", "motivates", "answered_by", "requires", "uses", "entails", "supports", "proves", "qualifies", "challenges", "contrasts", "instantiates")
+EDGE_TYPES = ("refines", "motivates", "answered_by", "develops", "requires", "uses", "entails", "supports", "proves", "qualifies", "challenges", "contrasts", "instantiates")
 DEPENDENCY_TYPES = ("requires", "uses", "entails", "supports", "proves", "instantiates", "qualifies", "challenges", "contrasts")
 DISCARD_REASONS = ("signpost", "pointer", "gloss", "illustration", "courtesy", "artifact", "declaration", "meta", "duplicate")
 WARRANT_ROLE = {"cited": "background", "assumed": "assumption", "proved": "theorem", "derived": "derived", "observed": "experiment", "interpreted": "claim", "conjectured": "hypothesis", "bounded": "limitation"}
@@ -71,6 +71,7 @@ class Dissection:
         n["role"] = {"statement": WARRANT_ROLE.get(sub), "target": "question", "construct": "definition" if sub in ("definition", "construction", "representation") else "method", "proof": "proof", "step": "step"}[kind]
         n["aside"] = function in ("interpretation", "comparison")
         n["story"] = bool(story) if story is not None else False
+        n["story_explicit"] = story is not None
         self.nodes[id] = n
         return id
 
@@ -138,6 +139,7 @@ class Dissection:
             if n["parent"] and n["parent"] not in nodes: problems.append(f"{n['id']}: unknown parent {n['parent']}")
         # story membership
         for n in nodes.values():
+            if n.pop("story_explicit", False): continue  # an explicit story=True/False in dissection.py wins (folded sub-claims stay off the storyline)
             if n["kind"] in ("statement", "target") and n["role"] in ("claim", "question") and not S[n["spans"][0]]["appendix"]: n["story"] = True
         # edge-evidence primaries
         primary = {}
@@ -208,8 +210,8 @@ class Dissection:
         for n in nodes.values():
             if n["kind"] == "target" and n["sub"] != "open_question" and not any(e["type"] == "answered_by" for e in outE.get(n["id"], [])):
                 warnings.append(f"target {n['id']} has no answered_by edge")
-            if n["role"] == "claim" and not n.get("skeleton") and not any(e["type"] in ("supports", "entails") for e in inE.get(n["id"], [])):
-                warnings.append(f"claim {n['id']} has no supports/entails incoming edge")
+            if n["role"] == "claim" and not n.get("skeleton") and not any(e["type"] in ("supports", "entails", "develops") for e in inE.get(n["id"], [])):
+                warnings.append(f"claim {n['id']} has no supports/entails/develops incoming edge")
             if n["kind"] == "target" and n["function"] not in ("goal", "evaluation", "future"): problems.append(f"{n['id']}: target with function {n['function']}")
             if n["kind"] == "step" and (not n["parent"] or nodes.get(n["parent"], {}).get("kind") != "proof"): problems.append(f"step {n['id']} must have a proof parent")
         if unassigned: problems.append(f"{len(unassigned)} unassigned units in the dissected range: {unassigned[:30]}")

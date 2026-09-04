@@ -8,7 +8,9 @@ supporting evidence together:
 
 - every source unit is assigned, echoed, structurally labeled, or explicitly
   left outside the completed coverage boundary;
-- the storyline runs from research questions to answers and contributions;
+- the storyline runs from root questions through their refinements to the claims that
+  answer them and the syntheses those claims develop into; a claim opens into its folded
+  sub-claims, each with the theorems and experiments behind it;
 - claims open into evidence graphs and theorems open into proof steps; and
 - the result is one portable offline `index.html` file with no web service or database.
 

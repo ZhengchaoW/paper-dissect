@@ -38,7 +38,9 @@ D.undissected_proof(id, parent=<theorem id>, start="s0462", end="s0467", label="
 - `text`: the idea in one or two sentences; may be empty for steps whose label says it all.
 - `parent`: only for non-section containment (steps → proof, proof → theorem, sub-methods →
   container construct). Section parents are assigned automatically from the home span.
-- `echoes`: restatements elsewhere. `story=True` on a construct puts it on the storyline.
+- `echoes`: restatements elsewhere. `story=True` on a construct puts it on the storyline;
+  `story=False` on a main-body claim keeps it off the storyline and folds it under the storyline
+  claim it `supports` (it then appears in that claim's evidence graph as a sub-claim).
 - `skeleton_env` takes the LaTeX `\label` (e.g. `"lem:projection"`) or the generated env id
   (`"lemma:4"`, see `skeleton.json → envs`) and uses the environment's units as the span.
 
@@ -63,7 +65,7 @@ Writes `out/graph.json` (nodes, edges, per-unit assignments, sections, refs, mac
 and `out/coverage.md`. `report["problems"]` (fatal): unknown node/parent ids, duplicate ids,
 overlapping spans, unassigned units in the dissected range, unknown labels, dependency cycles,
 steps without a proof parent, targets with a non-target function. `report["warnings"]`:
-targets without `answered_by`, claims without `supports`/`entails`.
+targets without `answered_by`, claims without `supports`/`entails`/`develops`.
 
 Typical fix loop: run → read the problem list → add the missing assignment (a node span, an
 echo, an edge evidence, or a discard with a reason) → run again. Zero unassigned units in the

@@ -13,20 +13,34 @@ paper is hidden from this pane — it is the denominator.
 
 ## Storyline pane (middle)
 
-**Inquiry (default).** Columns by inquiry role: Research question → Refined into (design goals,
-requirements, evaluation questions, each carrying "because: <problem>") → Answered by (claims
-and the approach constructs) → Contribution → Open. Arrows are `refines` and `answered_by`,
-plus relations derived through hidden evidence (dotted). Asides (interpretations, comparisons)
-are hidden by default. Layout: column by role, rows by source order, answers kept next to the
-target they answer.
+**Inquiry (default).** Six columns defined by relations, never by a label: Why (problems, off by
+default; each target carries "because: <problem>") → Root questions (targets nothing in the view
+`refines`) → Refinements (targets with an incoming `refines`: goals, follow-up questions,
+whatever their subtype) → Claims (statements with an incoming `answered_by`) → Synthesis
+(claims reached only through `develops`) → Open. A node cannot qualify for both columns of a
+pair, so the old "Research question / Refined into" and "Answered by / Contribution" overlaps
+cannot recur. `contribution` is not a column and not a chip; a claim echoed in the abstract
+shows "◆ abstract", which is derived from its echoes. Arrows are `refines`, `answered_by` and
+`develops`; a relation between two nodes in the same column is drawn as a short down-arrow
+(adjacent rows) or a rail beside the column, never a loop. A claim → question `motivates` hook
+runs backwards in a column layout, so it is drawn only while that claim is selected. Rows: a
+question and the claims that answer it share a row; a refinement starts on its parent's row;
+each root starts a new block; a synthesis sits at the mean row of its sources. With "reduce" on,
+a root's direct answer that is also reached through a refinement is not drawn (it stays in the
+Focus pane).
 
 **Narrative (toggle).** Columns by story function in the order the paper tells it: Problem →
 Goal → Approach → Answers·theory → Evaluation → Answers·experiments → Contribution → Open.
 
-**open ▸ on a claim → evidence graph.** The claim's direct warrants (proved, derived, observed
-statements) plus one hop of setup behind each warrant (`uses`, `requires`, `qualifies`); other
-story nodes appear as dashed "elsewhere" ports; proofs are never entered. This is the
-warrant-boundary rule: a theorem's own prerequisites belong to the theorem's layer.
+**open ▸ on a claim → evidence graph.** Columns: Setup · elsewhere → Theory & experiments →
+Sub-claims → Claim → Feeds into. From the claim, follow `supports` / `develops` / `entails`
+backwards through interpreted statements that are *not* on the storyline (the sub-claims a
+storyline claim folds, e.g. the per-stage claims under "three stages"), stop at warrants (proved,
+derived, observed, bounded), then add one hop of setup behind each warrant (`uses`, `requires`,
+`qualifies`). Other story nodes appear as dashed "elsewhere" ports; proofs are never entered.
+Columns are ordered right-to-left so each warrant sits beside the sub-claim it supports. A claim
+with no folded sub-claims has an empty Sub-claims column and its warrants attach directly. This
+is the warrant-boundary rule: a theorem's own prerequisites belong to the theorem's layer.
 
 **open ▸ on a result → proof graph.** Prerequisites (assumptions, definitions, lemmas — dashed
 ports, each lemma openable) → steps in chain order → the theorem. Layout by dependency
@@ -57,9 +71,10 @@ macros into KaTeX, which is vendored with its fonts so the single HTML remains u
 
 ## Layout rules worth keeping
 
-- Top layer by *function*, proofs by *dependency*, score by *source order*. Never layer the
-  storyline by topological depth: it scatters the story.
+- Top layer by *relation-defined column* (roots / refinements / claims / synthesis), proofs by
+  *dependency*, score by *source order*. Never layer the storyline by dependency depth (it
+  scatters the story) and never by a label (it duplicates columns).
 - Edges on the score are arcs (nodes on a line), so no edge ever crosses a node.
-- Narrative relations (motivates, refines, answered_by) are excluded from what-if and from the
-  cycle check.
+- Narrative relations (motivates, refines, answered_by, develops) are excluded from what-if and
+  from the cycle check.
 - Coverage bars in the header are computed from the per-unit assignments, not from the graph.

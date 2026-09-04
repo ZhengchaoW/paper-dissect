@@ -56,15 +56,18 @@ dataset · metric · baseline.
 
 context · problem · motivation · goal · approach · setup · guarantee (theorems, proofs, steps)
 · evaluation (evaluation questions) · evidence (experiments, observations) · theory_answer /
-empirical_answer (claims that answer a target, by what warrants them) · contribution (the
-paper's headline claims) · interpretation (an aside the authors draw) · comparison (vs. other
-work) · boundary (limitations) · future.
+empirical_answer (claims that answer a target, by what warrants them) · contribution (kept for
+compatibility; the reader no longer displays it — every claim that answers a question is a
+contribution, and the "our contributions" paragraph is a set of echoes) · interpretation (an
+aside the authors draw) · comparison (vs. other work) · boundary (limitations) · future.
 
 Rules: a target's function is fixed by its subtype (goal / evaluation / future). A "problem" is
 an interpreted (sometimes cited) statement about a deficiency; it `motivates` a target. The
-storyline shows targets, answering claims/constructs and contributions; interpretations and
-comparisons are asides, folded by default; context, setup, guarantees, evidence and boundaries
-live one level down.
+storyline shows targets, the claims/constructs that answer them and the claims those develop
+into; interpretations and comparisons are asides, folded by default; context, setup, guarantees,
+evidence and boundaries live one level down. A storyline claim may *fold* finer claims: give the
+finer claims `story=False` and `supports` edges into the storyline claim; they appear as the
+Sub-claims tier of its evidence graph, each with its own theorems and experiments.
 
 ## Relations (source = earlier in the logic → target = what it enables/supports/motivates)
 
@@ -73,6 +76,7 @@ live one level down.
 | refines | target → target | a sub-goal, requirement or evaluation question of a broader target |
 | motivates | problem / goal / claim → target or construct | the reason something is asked or built |
 | answered_by | target → claim or construct | the thing that answers or satisfies the target |
+| develops | claim → claim | a claim built on, extended or synthesised from another claim (narrative, not evidence: use `supports` for warrant → claim) |
 | requires | assumption → statement / construct | a stated precondition |
 | uses | construct → statement / construct / step; proved statement → step | invoked, applied, built upon |
 | entails | statement → statement (incl. step → step) | logical consequence within the argument |
@@ -84,7 +88,7 @@ live one level down.
 | instantiates | statement → statement | a special case worked out |
 
 `basis="explicit"` when the text states the relation; `"inferred"` when you added it. Attach
-the connective sentence(s) as `ev`. Narrative types (refines, motivates, answered_by) may form
+the connective sentence(s) as `ev`. Narrative types (refines, motivates, answered_by, develops) may form
 cycles with dependency types (hypothesis → test → evidence → hypothesis); dependency types
 alone must be acyclic.
 

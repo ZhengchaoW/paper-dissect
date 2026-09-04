@@ -6,7 +6,7 @@
   --ground:#F1F2F5; --pane:#FFFFFF; --ink:#1B1E26; --muted:#626B7A; --faint:#9AA1AD; --rule:#DDE1E7; --rule-soft:#ECEEF2; --hover:#F5F6F9; --sel:#EEF0FB;
   --accent:#4B4FB8;
   --r-question:#B07A12; --r-claim:#4B4FB8; --r-theorem:#1F7A63; --r-step:#3F9479; --r-proof:#1F7A63; --r-experiment:#C2542D; --r-method:#2E7FA8; --r-assumption:#8A5CB8; --r-definition:#6B7C93; --r-background:#8D95A3; --r-limitation:#B3332E; --r-discard:#B9BFC8; --r-derived:#4E9C86; --r-hypothesis:#C98A1E;
-  --e-refines:#B07A12; --e-requires:#8A5CB8; --e-uses:#7B8797; --e-entails:#5A6B7C; --e-supports:#1F7A63; --e-proves:#1F7A63; --e-motivates:#B07A12; --e-answered_by:#D19A2B; --e-qualifies:#B3332E; --e-contrasts:#7A5FA0; --e-instantiates:#2E7FA8;
+  --e-refines:#B07A12; --e-requires:#8A5CB8; --e-uses:#7B8797; --e-entails:#5A6B7C; --e-supports:#1F7A63; --e-proves:#1F7A63; --e-motivates:#B07A12; --e-answered_by:#D19A2B; --e-develops:#4E7F8C; --e-qualifies:#B3332E; --e-contrasts:#7A5FA0; --e-instantiates:#2E7FA8;
   --dirty:#F6E2DF; --dirty-ink:#B3332E;
   --ui:"IBM Plex Sans",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; --serif:"Source Serif 4",Georgia,serif;
 }
@@ -14,14 +14,14 @@
   --ground:#121419; --pane:#1A1D24; --ink:#E6E8EE; --muted:#A3AAB8; --faint:#6E7684; --rule:#2A2F3A; --rule-soft:#232833; --hover:#20242D; --sel:#262A44;
   --accent:#9A9DF0;
   --r-question:#E0A93C; --r-claim:#9A9DF0; --r-theorem:#5FC291; --r-step:#7ED0AC; --r-proof:#5FC291; --r-experiment:#F08A62; --r-method:#63B4DE; --r-assumption:#B996E0; --r-definition:#A9B6CC; --r-background:#8D95A3; --r-limitation:#F07470; --r-discard:#4A515C; --r-derived:#7ECDB5; --r-hypothesis:#E7B85A;
-  --e-refines:#E0A93C; --e-requires:#B996E0; --e-uses:#8B97A7; --e-entails:#A0AEBD; --e-supports:#5FC291; --e-proves:#5FC291; --e-motivates:#E0A93C; --e-answered_by:#F0C060; --e-qualifies:#F07470; --e-contrasts:#B996E0; --e-instantiates:#63B4DE;
+  --e-refines:#E0A93C; --e-requires:#B996E0; --e-uses:#8B97A7; --e-entails:#A0AEBD; --e-supports:#5FC291; --e-proves:#5FC291; --e-motivates:#E0A93C; --e-answered_by:#F0C060; --e-develops:#7FB5C2; --e-qualifies:#F07470; --e-contrasts:#B996E0; --e-instantiates:#63B4DE;
   --dirty:#3A1C1B; --dirty-ink:#F07470;
 }}
 :root[data-theme="dark"]{
   --ground:#121419; --pane:#1A1D24; --ink:#E6E8EE; --muted:#A3AAB8; --faint:#6E7684; --rule:#2A2F3A; --rule-soft:#232833; --hover:#20242D; --sel:#262A44;
   --accent:#9A9DF0;
   --r-question:#E0A93C; --r-claim:#9A9DF0; --r-theorem:#5FC291; --r-step:#7ED0AC; --r-proof:#5FC291; --r-experiment:#F08A62; --r-method:#63B4DE; --r-assumption:#B996E0; --r-definition:#A9B6CC; --r-background:#8D95A3; --r-limitation:#F07470; --r-discard:#4A515C; --r-derived:#7ECDB5; --r-hypothesis:#E7B85A;
-  --e-refines:#E0A93C; --e-requires:#B996E0; --e-uses:#8B97A7; --e-entails:#A0AEBD; --e-supports:#5FC291; --e-proves:#5FC291; --e-motivates:#E0A93C; --e-answered_by:#F0C060; --e-qualifies:#F07470; --e-contrasts:#B996E0; --e-instantiates:#63B4DE;
+  --e-refines:#E0A93C; --e-requires:#B996E0; --e-uses:#8B97A7; --e-entails:#A0AEBD; --e-supports:#5FC291; --e-proves:#5FC291; --e-motivates:#E0A93C; --e-answered_by:#F0C060; --e-develops:#7FB5C2; --e-qualifies:#F07470; --e-contrasts:#B996E0; --e-instantiates:#63B4DE;
   --dirty:#3A1C1B; --dirty-ink:#F07470;
 }
 *{box-sizing:border-box}
@@ -191,7 +191,7 @@ kbd{font-family:var(--mono);font-size:10.5px;border:1px solid var(--rule);border
     <label class="chk" id="reduceChk" title="Hide story relations implied by longer paths"><i style="color:var(--muted)"></i>reduce</label>
     <label class="chk off" id="asidesChk" title="Show interpretations and comparisons on the narrative storyline"><i style="color:var(--muted)"></i>asides</label>
     <label class="chk off" id="problemsChk" title="Show the motivating problems as their own column in the inquiry view"><i style="color:var(--muted)"></i>problems as nodes</label>
-    <div class="seg" role="group" aria-label="Storyline order"><button data-story="inquiry" aria-pressed="true" title="Question → refinements → answers → contributions">Inquiry</button><button data-story="narrative" aria-pressed="false" title="Problem → goal → approach → guarantee → evaluation → evidence → contribution">Narrative</button></div>
+    <div class="seg" role="group" aria-label="Storyline order"><button data-story="inquiry" aria-pressed="true" title="Root questions → refinements → claims → synthesis; open ▸ on a claim shows its sub-claims and their evidence">Inquiry</button><button data-story="narrative" aria-pressed="false" title="Problem → goal → approach → guarantee → evaluation → evidence → contribution">Narrative</button></div>
   </div>
 </header>
 <div class="panes">
@@ -224,8 +224,8 @@ const N = new Map(G.nodes.map(n => [n.id, n]));
 const isStory = id => { const n = N.get(id); return !!n && !!n.story; };
 const SEC = new Map(G.sections.map(s => [s.id, s]));
 const ROLE_LABEL = {question:'target', claim:'claim', theorem:'result', derived:'derived', hypothesis:'hypoth', step:'step', proof:'proof', experiment:'observed', method:'method', assumption:'assume', definition:'def', background:'cited', limitation:'limit'};
-const ETYPES = ['refines','motivates','answered_by','requires','uses','entails','supports','proves','qualifies','contrasts','instantiates'];
-const ETYPE_LABEL = {refines:'refines', motivates:'motivates', answered_by:'answered by', requires:'requires', uses:'uses', entails:'entails', supports:'supports', proves:'proves', qualifies:'qualifies', contrasts:'contrasts', instantiates:'instantiates'};
+const ETYPES = ['refines','motivates','answered_by','develops','requires','uses','entails','supports','proves','qualifies','contrasts','instantiates'];
+const ETYPE_LABEL = {refines:'refines', motivates:'motivates', answered_by:'answered by', develops:'develops', requires:'requires', uses:'uses', entails:'entails', supports:'supports', proves:'proves', qualifies:'qualifies', contrasts:'contrasts', instantiates:'instantiates'};
 const DEP_TYPES = new Set(['requires','uses','entails','supports','proves','instantiates']); // dependency semantics for what-if (narrative edges excluded)
 
 // ---------- derived structure ----------
@@ -575,7 +575,7 @@ let graphSel = null;
 const WARRANT_ROLES = new Set(['theorem', 'derived', 'experiment']);
 const SETUP_ROLES = new Set(['method', 'definition', 'assumption', 'limitation', 'background']);
 
-// evidence graph of a claim: its direct warrants, and one hop of setup behind each warrant. Stops at other story nodes (ports) and never enters proofs.
+// evidence graph of a claim: its folded sub-claims (interpreted statements not on the storyline) with their warrants, then one hop of setup behind each warrant. Stops at other story nodes (ports) and never enters proofs.
 function evidenceSet(id) {
   const n = N.get(id); const V = new Set([id]); const ports = new Set();
   if (n.role === 'question') {
@@ -584,7 +584,8 @@ function evidenceSet(id) {
     for (const v of [...V]) if (v !== id) for (const e of inE.get(v) || []) { if (e.from === id || V.has(e.from)) continue; if (WARRANT_ROLES.has(N.get(e.from).role) || N.get(e.from).role === 'limitation') V.add(e.from); }
     return {V, ports};
   }
-  for (const e of inE.get(id) || []) { const v = e.from; const vn = N.get(v); if (vn.role === 'step') continue; if (isStory(v)) ports.add(v); else V.add(v); }
+  const enter = (u, depth) => { for (const e of inE.get(u) || []) { const v = e.from; const vn = N.get(v); if (vn.role === 'step' || V.has(v)) continue; if (isStory(v)) { ports.add(v); continue; } V.add(v); if (vn.role === 'claim' && depth < 3) enter(v, depth + 1); } };
+  enter(id, 0); // a storyline claim may fold sub-claims; each brings its own warrants
   for (const v of [...V]) {
     if (v === id) continue; const vn = N.get(v);
     if (!WARRANT_ROLES.has(vn.role)) continue;
@@ -653,11 +654,19 @@ function layout(nodes, edges, opts) {
   const layer = new Map();
   if (opts.column) { for (const n of nodes) layer.set(n, opts.column(n)); }
   else { const order = topo(nodes, edges); for (const n of nodes) layer.set(n, 0); for (const n of order) for (const p of preds.get(n)) if (layer.has(p) && !(opts.narrative && false)) layer.set(n, Math.max(layer.get(n), layer.get(p) + 1)); }
+  let colIndex = null;
+  if (opts.column) { // drop empty columns so a hidden 'Why' column does not leave a gap
+    const used = [...new Set(layer.values())].sort((a, b) => a - b); colIndex = used;
+    const remap = new Map(used.map((c, i) => [c, i])); for (const n of nodes) layer.set(n, remap.get(layer.get(n)));
+  }
   const L = Math.max(0, ...layer.values()) + 1;
   const cols = Array.from({length: L}, () => []);
   for (const n of nodes) cols[layer.get(n)].push(n);
   for (const c of cols) c.sort((a, b) => N.get(a).pos - N.get(b).pos);
-  if (opts.column && opts.parentRank) { // keep answers next to the targets they answer
+  if (opts.column && opts.childRank) { // evidence view: order right-to-left, so each warrant sits next to the sub-claim it supports and each setup item next to its warrant
+    const rank = new Map(); cols.forEach(c => c.forEach((n, i) => rank.set(n, i)));
+    for (let li = L - 2; li >= 0; li--) { const c = cols[li]; const key = new Map(c.map(n => { const ss = succs.get(n).filter(x => rank.has(x) && layer.get(x) > li); return [n, ss.length ? Math.min(...ss.map(x => rank.get(x))) : 1e9]; })); c.sort((a, b) => key.get(a) - key.get(b) || N.get(a).pos - N.get(b).pos); c.forEach((n, i) => rank.set(n, i)); }
+  } else if (opts.column && opts.parentRank) { // keep answers next to the targets they answer
     const rank = new Map(); cols.forEach(c => c.forEach((n, i) => rank.set(n, i)));
     for (let li = 1; li < L; li++) { const c = cols[li]; const key = new Map(c.map(n => { const ps = preds.get(n).filter(p => rank.has(p) && layer.get(p) < li); return [n, ps.length ? Math.min(...ps.map(p => rank.get(p))) : 1e9]; })); c.sort((a, b) => key.get(a) - key.get(b) || N.get(a).pos - N.get(b).pos); c.forEach((n, i) => rank.set(n, i)); }
   }
@@ -673,12 +682,12 @@ function layout(nodes, edges, opts) {
       }
     }
   }
-  const maxRows = Math.max(1, ...cols.map(c => c.length));
+  const maxRows = opts.rows ? Math.max(0, ...opts.rows.values()) + 1 : Math.max(1, ...cols.map(c => c.length));
   const top = opts.column ? 34 : 20;
   const totalH = maxRows * (H + GY);
   const xy = new Map();
-  cols.forEach((c, li) => { const off = opts.column ? 0 : (totalH - c.length * (H + GY)) / 2; c.forEach((n, i) => xy.set(n, {x: 20 + li * (W + GX), y: top + off + i * (H + GY)})); });
-  return {xy, width: 40 + L * (W + GX), height: top + 20 + totalH, cols};
+  cols.forEach((c, li) => { const off = opts.column ? 0 : (totalH - c.length * (H + GY)) / 2; c.forEach((n, i) => xy.set(n, {x: 20 + li * (W + GX), y: top + (opts.rows ? opts.rows.get(n) * (H + GY) : off + i * (H + GY))})); });
+  return {xy, width: 40 + L * (W + GX), height: top + 20 + totalH, cols, colIndex};
 }
 function wrap(text, maxChars, maxLines) {
   const words = text.split(/\s+/); const lines = []; let cur = '';
@@ -691,6 +700,7 @@ function badges(id) {
   const {V} = evidenceSet(id); const c = {};
   for (const v of V) { if (v === id) continue; const r = N.get(v).role; c[r] = (c[r] || 0) + 1; }
   const parts = [];
+  if (c.claim) parts.push(`${c.claim} sub-claim${c.claim > 1 ? 's' : ''}`);
   if (c.theorem) parts.push(`${c.theorem} result${c.theorem > 1 ? 's' : ''}`);
   if (c.experiment) parts.push(`${c.experiment} exp`);
   if (c.derived) parts.push(`${c.derived} derived`);
@@ -709,26 +719,59 @@ function storyColumn(id) {
 }
 const isProblem = id => { const n = N.get(id); return !!n && n.function === 'problem'; };
 function problemsOf(id) { return (inE.get(id) || []).filter(e => e.type === 'motivates' && isProblem(e.from)).map(e => e.from); }
-function inquiryColumn(id) {
+function inquiryColumn(id, V) {
+  // structural, not by label: a target is a refinement iff something in the view refines it; a claim is a synthesis iff nothing in the view answers-by it
   const n = N.get(id);
   if (isProblem(id)) return 0;
-  if (n.kind === 'target') return n.sub === 'research_question' ? 1 : n.sub === 'open_question' ? 5 : 2;
-  if (n.function === 'contribution') return 4;
-  return 3; // answers: claims and constructs that answer a target
+  if (n.kind === 'target') {
+    if (n.sub === 'open_question') return 5;
+    const refined = (inE.get(id) || []).some(e => e.type === 'refines' && (!V || V.has(e.from)));
+    return refined ? 2 : 1;
+  }
+  const answers = (inE.get(id) || []).some(e => e.type === 'answered_by' && (!V || V.has(e.from)));
+  return answers ? 3 : 4;
 }
-const INQ_TITLE = ['Why (problems)', 'Research question', 'Refined into', 'Answered by', 'Contribution', 'Open'];
+const INQ_TITLE = ['Why (problems)', 'Root questions', 'Refinements', 'Claims', 'Synthesis', 'Open'];
+const inAbstract = id => { const n = N.get(id); return [...n.spans, ...(n.echoes || [])].some(sid => (S.get(sid).section || '') === ''); };
+// rows for the inquiry grid: a question and the claims that answer it share a row; refinements start on their parent's row; each root starts a new block
+function inquiryRows(V, E, col) {
+  const rows = new Map(); const next = [0, 0, 0, 0, 0, 0];
+  const byPos = (a, b) => N.get(a).pos - N.get(b).pos;
+  const place = (id, minRow) => { const c = col(id); const r = Math.max(next[c], minRow); rows.set(id, r); next[c] = r + 1; return r; };
+  const outs = (q, type, c) => E.filter(e => e.from === q && e.type === type && (c === undefined || col(e.to) === c)).map(e => e.to).sort(byPos);
+  const viaRefinement = (q, a) => outs(q, 'refines', 2).some(k => E.some(e => e.from === k && e.type === 'answered_by' && e.to === a));
+  const visitQ = (q, minRow) => {
+    const r = place(q, minRow);
+    for (const a of outs(q, 'answered_by')) if (!rows.has(a) && !viaRefinement(q, a)) place(a, r);
+    for (const k of outs(q, 'refines', 2)) if (!rows.has(k)) visitQ(k, r);
+    for (const o of outs(q, 'refines', 5)) if (!rows.has(o)) place(o, r);
+  };
+  for (const q of [...V].filter(id => col(id) === 1).sort(byPos)) visitQ(q, Math.max(...next));
+  for (const q of [...V].filter(id => col(id) === 2 && !rows.has(id)).sort(byPos)) visitQ(q, Math.max(...next)); // refinements whose parent is hidden
+  const probs = [...V].filter(id => col(id) === 0).map(id => { const qs = E.filter(e => e.from === id && e.type === 'motivates' && rows.has(e.to)).map(e => rows.get(e.to)); return [id, qs.length ? Math.min(...qs) : 1e9]; }).sort((a, b) => a[1] - b[1] || byPos(a[0], b[0]));
+  for (const [id, r] of probs) place(id, r === 1e9 ? 0 : r);
+  const preds = new Map(); for (const e of E) { if (!preds.has(e.to)) preds.set(e.to, []); preds.get(e.to).push(e.from); }
+  for (const id of [...V].sort(byPos)) if (!rows.has(id)) { const ps = (preds.get(id) || []).filter(p => rows.has(p)); place(id, ps.length ? Math.round(ps.reduce((t, p) => t + rows.get(p), 0) / ps.length) : 0); }
+  return rows;
+}
 function currentView() {
   const t = top();
   if (t.kind === 'story' && state.storyMode === 'inquiry') {
-    const targets = G.nodes.filter(n => n.kind === 'target' && !S.get(n.spans[0]).appendix).map(n => n.id);
+    const targets = G.nodes.filter(n => n.kind === 'target' && n.story && !S.get(n.spans[0]).appendix).map(n => n.id);
     const V = new Set(targets);
-    for (const q of targets) for (const e of outE.get(q) || []) if (e.type === 'answered_by') V.add(e.to);
-    for (const n of G.nodes) if (n.story && n.function === 'contribution') V.add(n.id);
+    const storyClaim = id => isStory(id) && !N.get(id).aside && N.get(id).kind !== 'target';
+    for (const q of targets) for (const e of outE.get(q) || []) if (e.type === 'answered_by' && storyClaim(e.to)) V.add(e.to);
+    let grew = true; while (grew) { grew = false; for (const u of [...V]) for (const e of outE.get(u) || []) if (e.type === 'develops' && storyClaim(e.to) && !V.has(e.to)) { V.add(e.to); grew = true; } }
     if (state.problems) for (const q of targets) for (const p of problemsOf(q)) V.add(p);
-    let E = derivedEdges(V, true).filter(e => !(isProblem(e.from) && !state.problems));
-    E = E.filter(e => e.type !== 'motivates' || isProblem(e.from));
-    if (state.reduce) { const keep = E.filter(e => e.type === 'refines' || e.type === 'answered_by' || isProblem(e.from)); const rest = transitiveReduce([...V], E.filter(e => !keep.includes(e))); E = keep.concat(rest.filter(r => !keep.some(k => k.from === r.from && k.to === r.to))); }
-    return {nodes: [...V], edges: E, ports: new Set(), title: 'Inquiry — the research question refines into goals and evaluation questions; each is answered; answers synthesize into contributions', badge: true, column: inquiryColumn, colTitles: INQ_TITLE, inquiry: true};
+    const col = id => inquiryColumn(id, V);
+    let E = derivedEdges(V, true).filter(e => !e.via);
+    E = E.filter(e => ['refines', 'answered_by', 'develops'].includes(e.type) || (e.type === 'motivates' && (isProblem(e.from) ? state.problems : (e.from === graphSel || e.to === graphSel))));
+    if (state.reduce) {
+      const keep = E.filter(e => e.type !== 'develops'); const rest = transitiveReduce([...V], E.filter(e => e.type === 'develops')); E = keep.concat(rest);
+      E = E.filter(e => !(e.type === 'answered_by' && E.some(r => r.type === 'refines' && r.from === e.from && E.some(a => a.type === 'answered_by' && a.from === r.to && a.to === e.to)))); // a root's direct answer that is also reached through a refinement
+    }
+    const rows = inquiryRows(V, E.filter(e => e.type !== 'motivates' || isProblem(e.from)), col);
+    return {nodes: [...V], edges: E, ports: new Set(), title: 'Inquiry — root questions, their refinements, the claims that answer them, and what those claims develop into', badge: true, column: col, colTitles: INQ_TITLE, inquiry: true, rows};
   }
   if (t.kind === 'story') {
     const V = new Set(G.nodes.filter(n => n.story && (state.asides || !n.aside)).map(n => n.id));
@@ -740,7 +783,13 @@ function currentView() {
   const all = new Set([...set.V, ...set.ports]);
   let E = derivedEdges(all, false).filter(e => !(t.kind === 'proof' && N.get(e.from).role === 'proof'));
   if (set.extra) E = E.concat(set.extra);
-  return {nodes: [...all].filter(id => !(t.kind === 'proof' && N.get(id).role === 'proof')), edges: E, ports: set.ports, title: t.title, focal: t.id, badge: false};
+  const view = {nodes: [...all].filter(id => !(t.kind === 'proof' && N.get(id).role === 'proof')), edges: E, ports: set.ports, title: t.title, focal: t.id, badge: false};
+  if (t.kind === 'evidence' && N.get(t.id).role === 'claim') { // a claim's evidence reads left to right: setup → theory & experiments → folded sub-claims → the claim → what it feeds
+    const feeds = new Set(E.filter(e => e.from === t.id).map(e => e.to));
+    view.column = id => { const n = N.get(id); if (id === t.id) return 3; if (set.ports.has(id)) return feeds.has(id) ? 4 : 0; if (n.role === 'claim' || n.role === 'hypothesis') return 2; if (WARRANT_ROLES.has(n.role) || n.role === 'limitation') return 1; return 0; };
+    view.colTitles = ['Setup · elsewhere', 'Theory & experiments', 'Sub-claims', 'Claim', 'Feeds into']; view.inquiry = false; view.evidence = true;
+  }
+  return view;
 }
 function drillKind(id) { const n = N.get(id); if (!n) return null; if (n.role === 'theorem' && (childrenOf.get(id) || []).length) return 'proof'; if (n.role === 'proof') return 'proof'; if (n.shape === 'container' && n.role !== 'proof') return 'container'; if (isStory(id)) return 'evidence'; if (n.role === 'claim' || n.role === 'question') return 'evidence'; return null; }
 function drill(id) {
@@ -756,20 +805,25 @@ function popTo(i) { graphStack.length = i + 1; graphSel = null; renderGraph(); c
 function renderGraph() {
   const view = currentView();
   const W = view.column ? 188 : 200, H = 64;
-  const {xy, width, height, cols} = layout(view.nodes, view.edges, {w: W, h: H, gx: view.column ? 44 : 56, gy: 12, column: view.column, parentRank: !!view.inquiry});
+  const {xy, width, height, cols, colIndex} = layout(view.nodes, view.edges, {w: W, h: H, gx: view.column ? 44 : 56, gy: 12, column: view.column, parentRank: !!view.inquiry, childRank: !!view.evidence, rows: view.rows});
   const svg = document.getElementById('gsvg');
   svg.setAttribute('width', width); svg.setAttribute('height', height); svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
   const hi = new Set(); if (graphSel && xy.has(graphSel)) { hi.add(graphSel); const walk = (start, dir) => { const st = [start]; while (st.length) { const u = st.pop(); for (const e of view.edges) { const v = dir === 'up' ? (e.to === u ? e.from : null) : (e.from === u ? e.to : null); if (v && !hi.has(v)) { hi.add(v); st.push(v); } } } }; walk(graphSel, 'up'); walk(graphSel, 'down'); }
   const dirty = state.whatIf && state.selected ? downstream(state.selected) : new Set();
   const defs = `<defs>${ETYPES.map(t => `<marker id="gm-${t}" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0.5 L8,4 L0,7.5 z" fill="${edgeColor(t)}"/></marker>`).join('')}</defs>`;
-  const heads = view.column ? cols.map((c, i) => c.length ? `<text class="colhead" x="${20 + i * (W + 44)}" y="18">${(view.colTitles || COL_TITLE)[i] || ''}</text>` : '').join('') : '';
+  const heads = view.column ? cols.map((c, i) => c.length ? `<text class="colhead" x="${20 + i * (W + 44)}" y="18">${(view.colTitles || COL_TITLE)[colIndex ? colIndex[i] : i] || ''}</text>` : '').join('') : '';
   const eds = view.edges.map(e => {
     const a = xy.get(e.from), b = xy.get(e.to); if (!a || !b) return '';
     const back = b.x < a.x + 10;
     const x1 = back ? a.x : a.x + W, y1 = a.y + H / 2, x2 = back ? b.x + W : b.x, y2 = b.y + H / 2;
     const same = Math.abs(b.x - a.x) < 5;
     let d;
-    if (same) { const bul = 40; d = `M ${a.x + W} ${y1} C ${a.x + W + bul} ${y1}, ${b.x + W + bul} ${y2}, ${b.x + W} ${y2}`; }
+    if (same) {
+      const adjacentDown = b.y > a.y && b.y - a.y <= H + 14;
+      if (adjacentDown) d = `M ${a.x + W / 2} ${a.y + H} L ${b.x + W / 2} ${b.y}`;
+      else if (e.type === 'refines' || e.type === 'motivates') { const r = a.x - 10; d = `M ${a.x} ${y1} H ${r} V ${y2} H ${b.x}`; }
+      else { const r = a.x + W + 12; d = `M ${a.x + W} ${y1} H ${r} V ${y2} H ${b.x + W}`; }
+    }
     else if (back) { d = `M ${x1} ${y1} C ${x1 - 50} ${y1}, ${x2 + 50} ${y2}, ${x2} ${y2}`; }
     else { const dx = Math.max(30, (x2 - x1) / 2); d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`; }
     const cls = [e.via ? 'via' : '', e.basis === 'inferred' ? 'inf' : '', hi.size ? ((hi.has(e.from) && hi.has(e.to)) ? 'hi' : 'lo') : ''].join(' ');
@@ -779,7 +833,8 @@ function renderGraph() {
     const n = N.get(id); const p = xy.get(id); const port = view.ports.has(id);
     const lines = wrap(n.label, W > 190 ? 30 : 28, 2);
     const chip = chipOf(n);
-    const fn = n.kind !== 'target' && (view.badge || view.focal) && n.function && !['setup', 'guarantee', 'evidence', 'context'].includes(n.function) ? (FUNC_LABEL[n.function] || n.function) : (n.function === 'context' ? 'context' : '');
+    const fnRaw = n.kind !== 'target' && (view.badge || view.focal) && n.function && !['setup', 'guarantee', 'evidence', 'context', 'contribution'].includes(n.function) ? (FUNC_LABEL[n.function] || n.function) : (n.function === 'context' ? 'context' : '');
+    const fn = view.inquiry ? (n.role === 'claim' && inAbstract(id) ? '◆ abstract' : '') : fnRaw;
     let bd = view.badge && n.role === 'claim' ? badges(id) : (n.role === 'proof' ? `${(childrenOf.get(id) || []).length} steps` : (n.role === 'theorem' && (childrenOf.get(id) || []).length ? 'has proof' : ''));
     if (view.inquiry && n.kind === 'target' && !state.problems) { const ps = problemsOf(id); if (ps.length) bd = 'because: ' + ps.map(p => N.get(p).label.replace(/^Problem \d+ — /, '')).join('; '); }
     const bdMax = drillKind(id) ? 26 : 34; if (bd && bd.length > bdMax) bd = bd.slice(0, bdMax - 1) + '…';
