@@ -42,6 +42,21 @@ Accepted inputs:
 - a local LaTeX source directory; or
 - a local PDF.
 
+### How input preparation works
+
+For an arXiv identifier, Paper Dissect downloads the authors' original e-print
+source bundle from arXiv and uses its `.tex` files when they are available. It
+does not reconstruct LaTeX from the PDF. The source is flattened by expanding
+`\input` and `\include`, then parsed into sentence units, equations,
+theorem environments, references, figures, and tables.
+
+If arXiv has no TeX source, or the input is a PDF alone, the skill falls back
+to `pdftotext -layout`. That fallback extracts and segments readable text; it
+does not reverse-engineer equations, theorem structure, figures, or a new
+`.tex` project. Consequently, PDF-only dissections have lower structural
+fidelity. Codex reconstructs the paper's *argument graph*, not its typesetting
+source.
+
 Each run produces:
 
 - `index.html` — the self-contained interactive website;
